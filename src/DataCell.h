@@ -43,6 +43,7 @@ protected:
     double  CKMValue;
 
 	int	Status;
+    int OriginalStatus;
 	double	TempShadow;
 	int	HoldingNr; //Holding number of the temp shadow
 	int	PeepSortCell;
@@ -198,7 +199,7 @@ public:
         void SetCellKey(double CellKey)                 { this->CellKey = CellKey; }
         void SetCellKeyNoZeros(double CellKey)          { this->CellKeyNoZeros = CellKey; }        
         void SetCKMValue(double CKMValue)               { this->CKMValue = CKMValue; }
-	void SetStatus(long Status)			{ this->Status = Status; }
+        void SetStatus(long NewStatus)                  { this->Status = NewStatus; }
 	void SetCTAValue(double CTAValue)               { this->CTAValue = CTAValue; }
 	void SetTempShadow(double TempShadow)		{ this->TempShadow = TempShadow; }
 	void SetHoldingNr(int HoldingNr)		{ this->HoldingNr = HoldingNr; }
@@ -210,6 +211,7 @@ public:
 	void SetPeepSortHolding(int iPeepsort)		{ this->PeepSortHolding = iPeepsort; }
 	void SetUpperProtectionLevel(double UPL)	{ this->UpperProtectionLevel = UPL; }
 	void SetLowerProtectionLevel(double LPL)	{ this->LowerProtectionLevel = LPL; }
+    void SetOriginalStatus(long NewStatus)  { this->OriginalStatus = NewStatus; }
 
 	
 	
@@ -238,6 +240,7 @@ public:
 	long   GetPeepSortHolding()		{ return PeepSortHolding; }
 	double GetUpperProtectionLevel()	{ return UpperProtectionLevel; }
 	double GetLowerProtectionLevel()	{ return LowerProtectionLevel; }
+    long GetOriginalStatus()                { return OriginalStatus; }
 
 
 	void MergeScoreHolding(double *a, int *ah, double *b, int *bh, int n);

@@ -56,6 +56,7 @@ CDataCell::CDataCell(int NumberMaxScoreCell, int NumberMaxScoreHolding, int IsHo
     MinScoreWeightCell = 0;        
 
 	Status = CS_EMPTY;
+	OriginalStatus = 0;
 	TempShadow = 0;
     HoldingNr = IsHolding ? WITH_HOLDING : WITHOUT_HOLDING;
 	PeepSortCell = EMPTY;

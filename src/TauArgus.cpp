@@ -2667,17 +2667,18 @@ bool TauArgus::SetRealizedLowerAndUpper(long TabNr, long CelNr, double RealizedU
 		return false;
 	}
 
-	CDataCell *dc = m_tab[TabIndex].GetCell(CelNr);
+	CDataCell* dc = m_tab[TabIndex].GetCell(CelNr);
 	if ((dc->GetStatus() == CS_UNSAFE_FREQ) || (dc->GetStatus() == CS_UNSAFE_PEEP) ||
 		(dc->GetStatus() == CS_UNSAFE_RULE) || (dc->GetStatus() == CS_UNSAFE_SINGLETON) ||
 		(dc->GetStatus() == CS_UNSAFE_ZERO) ||
 		(dc->GetStatus() == CS_SECONDARY_UNSAFE) ||
-		(dc->GetStatus() == CS_UNSAFE_MANUAL)  || (dc->GetStatus() == CS_SECONDARY_UNSAFE_MANUAL)) {
+		(dc->GetStatus() == CS_UNSAFE_MANUAL) || (dc->GetStatus() == CS_SECONDARY_UNSAFE_MANUAL) ||
+		(dc->GetStatus() == CS_FROZEN)) { 
 		dc->SetRealizedLowerValue(RealizedLower);
 		dc->SetRealizedUpperValue(RealizedUpper);
 		return true;
 	}
-	else  {
+	else {
 		return false;
 	}
 }
@@ -3024,10 +3025,12 @@ bool TauArgus::SetSecondaryFromHierarchicalAMPL(const char* FileName, long Table
 		}
 
 		long Cellnum = tab->GetCellNrFromIndices(TableCellIndex);
+		CDataCell* dc = tab->GetCell(Cellnum);
 
-		CDataCell *dc = tab->GetCell(Cellnum);
-		if ((dc->GetStatus() != CS_EMPTY) && (dc->GetStatus() != CS_EMPTY_NONSTRUCTURAL))	{
-			dc->SetStatus(CS_SECONDARY_UNSAFE);
+		if ((dc->GetStatus() != CS_EMPTY) && (dc->GetStatus() != CS_EMPTY_NONSTRUCTURAL)) {
+			if (dc->GetStatus() != CS_FROZEN) {
+				dc->SetStatus(CS_SECONDARY_UNSAFE);
+			}
 		}
 		else {
 			return false;
@@ -4614,6 +4617,7 @@ void TauArgus::WriteCSVCell(FILE *fd, CTable *tab, long *Dim, bool ShowUnsafe, i
 		case CS_UNSAFE_MANUAL:
 		case CS_SECONDARY_UNSAFE:
 		case CS_SECONDARY_UNSAFE_MANUAL:
+		case CS_FROZEN:
 			switch (RespType ){
 			case 0: if (ShowUnsafe) {
 				       fprintf(fd, "%.*f", nDec, dc->GetResp());}
@@ -4710,6 +4714,9 @@ void TauArgus::WriteSBSStaart(FILE *fd, CTable *tab, long *Dim, char ValueSep, l
 		case CS_SECONDARY_UNSAFE:
 		case CS_SECONDARY_UNSAFE_MANUAL:
 			fprintf(fd, "D");
+			break;
+		case CS_FROZEN:
+			fprintf(fd, "f"); 
 			break;
 		case CS_EMPTY:
 			fprintf(fd, "-");
@@ -4984,6 +4991,9 @@ void TauArgus::ShowTableLayer(FILE *fd, int var1, int var2, int cellnr, CTable& 
 				break;
 			case CS_SECONDARY_UNSAFE:
         fprintf(fd, "+| ");
+				break;
+			case CS_FROZEN:
+		fprintf(fd, "F| ");
 				break;
 			default:
         fprintf(fd, "?| ");
