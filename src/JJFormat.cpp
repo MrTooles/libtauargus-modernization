@@ -479,35 +479,35 @@ bool CJJFormat::SetSecondaryUnsafe(const char *FileName, CTable *tab, CVariable 
 	return result;
 }
 
-bool CJJFormat::SetSecUnSafe(CTable *tab,  CVariable *var, FILE *fd, bool WithBogus)
+bool CJJFormat::SetSecUnSafe(CTable* tab, CVariable* var, FILE* fd, bool WithBogus)
 {
 	int i, n = 2;
 	char str[1000];
-	CDataCell *dc;
-	// lees eerst n lege regels als nodig
+	CDataCell* dc;
+
 	for (i = 0; i < n; i++) {
-	  fgets(str, 1000, fd);
+		fgets(str, 1000, fd);
 	}
 
-	while (!feof(fd) ) {
+	while (!feof(fd)) {
 		str[0] = 0;
 		fgets(str, 1000, fd);
 		if (str[0] == 0) break;
+
 		if (strchr(str, 'm') != 0) {
-			// first integer: cellnr
 			long CellNr = atol(str);
 			ASSERT(CellNr >= 0 && CellNr < tab->nCell);
 			if (CellNr < 0 || CellNr >= tab->nCell) {
 				return false;
 			}
-     		// correct for Bogus
 			if (WithBogus) {
 				CellNr = SetCellNrBogus(tab, var, CellNr);
 			}
 
 			dc = tab->GetCell(CellNr);
 
-			switch (dc->GetStatus() ) {
+			if (dc->GetStatus() != CS_FROZEN) {
+				switch (dc->GetStatus()) {
 				case CS_SAFE:
 					dc->SetStatus(CS_SECONDARY_UNSAFE);
 					break;
@@ -516,15 +516,29 @@ bool CJJFormat::SetSecUnSafe(CTable *tab,  CVariable *var, FILE *fd, bool WithBo
 					break;
 				default:
 					return false;
+				}
+				nSetAtSec++;
 			}
-			nSetAtSec++;
 			// tab->SetCell(CellNr, *dc);
+		}
+
+		else if (strchr(str, 'f') != 0) {
+			long CellNr = atol(str);
+			ASSERT(CellNr >= 0 && CellNr < tab->nCell);
+			if (CellNr < 0 || CellNr >= tab->nCell) {
+				return false;
+			}
+			if (WithBogus) {
+				CellNr = SetCellNrBogus(tab, var, CellNr);
+			}
+
+			dc = tab->GetCell(CellNr);
+
+			dc->SetStatus(CS_FROZEN);
 		}
 	}
 
 	return true;
-
-
 }
 
 // only in case of WithBogus

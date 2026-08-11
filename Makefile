@@ -9,20 +9,20 @@ CP              = cp -p
 32BIT           = true
 #32BIT           = false
 
-SWIGDIR         = D:/Peter-Paul/Documents/Thuiswerk/Programmatuur/swigwin-4.0.2
+SWIGDIR         = C:/swigwin
 
 ifeq ($(32BIT), false)  # 64 bit assumed
     BITS        = -m64 -D_LP64
     ARCH        = x86_64
     CND_PLATFORM= MinGW-Windows64
     JAVADIR     = ../../../Java/zulu8.52.0.23-ca-jdk8.0.282-win_x64
-    GNUDIR      = C:/Progra~1/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin
+    GNUDIR      = C:/mingw32/bin
 else                    # 32 bit assumed
     BITS        = -m32
     ARCH        = x86
     CND_PLATFORM= MinGW-Windows
-    JAVADIR     = ../../../Java/zulu8.52.0.23-ca-jdk8.0.282-win_i686
-    GNUDIR      = C:/Progra~2/mingw-w64/i686-8.1.0-win32-sjlj-rt_v6-rev0/mingw32/bin
+    JAVADIR     = C:/Users/eluft/Documents/DESTATIS/bellsoft-jdk21.0.11+11-windows-i586/jdk-21.0.11
+    GNUDIR      = C:/mingw32/bin
 endif
 
 JAVAINC         = -I$(JAVADIR)/include -I$(JAVADIR)/include/win32
@@ -90,8 +90,8 @@ $(CND_BUILDDIR) $(CND_BUILDDIR)/$(CND_CONF) $(OBJDIR) $(CND_DISTDIR) $(CND_DISTD
 
 $(TARGET) : $(OBJECTS)
 	$(LINK) $(LDFLAGS) -o $@ $^
-	$(CP) $(TARGET) $(SRCDIR)/../../tauargus/$(LIBFILENAME)
-	$(CP) $(LIBDIR)/*.java $(SRCDIR)/../../tauargus/src/tauargus/extern/dataengine
+	$(CP) $(TARGET) $(SRCDIR)/../../tauargus-modernization/dlls/$(LIBFILENAME)
+	$(CP) $(LIBDIR)/*.java $(SRCDIR)/../../tauargus-modernization/src/tauargus/extern/dataengine
 
 # pull in dependency info for *existing* .o files
 -include $(wildcard $(addsuffix .d, $(OBJECTS))) 

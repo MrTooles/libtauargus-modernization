@@ -2319,8 +2319,11 @@ bool TauArgus::SetInTable(long Index, char *sCode[],
 // To state all the cells have been read and the table has to be built.
 // In some case the marginals (or sub totals are given ) in other cases they have to be
 // calculated
-bool TauArgus::CompletedTable(long Index, long *ErrorCode, const char* FileName, bool CalculateTotals,
-                                bool SetCalculatedTotalsAsSafe, bool ForCoverTable)
+bool TauArgus::CompletedTable(long Index, long *ErrorCode,
+										 const char* FileName,
+										 bool CalculateTotals,
+										 bool SetCalculatedTotalsAsSafe,
+										 bool ForCoverTable)
 {
 //	string sFileName;
 //	sFileName = FileName;
@@ -2332,138 +2335,159 @@ bool TauArgus::CompletedTable(long Index, long *ErrorCode, const char* FileName,
 	bool IsAdditive = true;
 	int i = 1;
 	if (m_HasStatus)  {
-            for (i=0; i <m_tab[Index].nCell; i++)  {
-		// if not safe or unsafe set empty; all not entered cells
-		dc = m_tab[Index].GetCell(i);
-		if (dc->GetStatus() == 0)  {
-                    //m_tab[Index].CellPtr.SetAt(i,dcempty);
-                    //dc = m_tab[Index].GetCell(i);
-                    dc->SetStatus(CS_EMPTY);
-                    dc->IsFilled = false; //Why false,AncoJuly 2012
-		}
-            }
-            // Sub totals are given. Check if table is additive
-            // CoverTabel always has a status
-            if (!ForCoverTable){
-		if (!CalculateTotals){
-                    if (!IsTable(&(m_tab[Index]))) {
-		    	*ErrorCode = TABLENOTADDITIVE;
-                        WriteJJFormat(Index, FileName, -1000, 1000, false, false, false);
-			IsAdditive = false;
-//			return false;
-                    }
-		}
-		// other wise make sub totals
-		else{
-                    long tel = 0;
-                    long maxdiepte = MaxDiepteVanSpanVariablen(&(m_tab[Index]));
 
-                    while (!IsTable(&(m_tab[Index]))){
-			AdjustTable(&(m_tab[Index]));
-    			// To preven an unending loop
-			tel++;
-			if (tel > maxdiepte + 6 ){break;}
-                    }
-                    
-                    if (tel > maxdiepte + 6){
-			*ErrorCode = CANNOTMAKETOTALS;
-			IsAdditive = false;
-//			return false;
-                    }
-		}
-            }
-            // Calculated totals to be set as safe
-            if (SetCalculatedTotalsAsSafe){
-		for (i=0; i <m_tab[Index].nCell; i++){
-		// if not safe or unsafe set empty
-                    dc = m_tab[Index].GetCell(i);
-                    if (dc->GetStatus() == 0)  {
-			dc->SetStatus(CS_SAFE_MANUAL);
-			dc->IsFilled = false;  //Why false,AncoJuly 2012
-                    }
-		}
-            }
-            // if status is not given. Either frequency or max score is given.
-            // to apply rules
-            else {
-		if (!((m_HasFreq) || (m_HasMaxScore))){
-                    *ErrorCode = CANNOTCALCULATESAFETY;
-                    return false;
-		}
-		else{
-                    for (i=0; i <m_tab[Index].nCell; i++){
-                    // if not safe or unsafe set empty
+//  WriteJJFormat(Index, FileName, -1000, 1000, true, false, false);
+//													double LowerBound, double UpperBound,
+//													bool WithBogus, bool AsPerc,
+//													bool ForRounding,
+
+		for (i=0; i <m_tab[Index].nCell; i++)  {
+			// if not safe or unsafe set empty; all not entered cells
 			dc = m_tab[Index].GetCell(i);
 			if (dc->GetStatus() == 0)  {
-                            //	m_tab[Index].CellPtr.SetAt(i,dcempty);
-                            //	dc = m_tab[Index].GetCell(i);
-                            dc->SetStatus(m_tab[Index].ComputeCellSafeCode(*dc));
-                            m_tab[Index].SetProtectionLevelCell(*dc);
-                            dc->IsFilled = false;  //Why false,AncoJuly 2012
+			//	m_tab[Index].CellPtr.SetAt(i,dcempty);
+			//	dc = m_tab[Index].GetCell(i);
+				dc->SetStatus(CS_EMPTY);
+				dc->IsFilled = false; //Why false,AncoJuly 2012
 			}
-                    }
 		}
-            }
+		// Sub totals are given. Check if table is additive
+		// CoverTabel always has a status
+		if (!ForCoverTable){
+			if (!CalculateTotals)	{
+	    		if (!IsTable(&(m_tab[Index]))) {
+		    		*ErrorCode = TABLENOTADDITIVE;
+     			    WriteJJFormat(Index, FileName, -1000, 1000, false, false, false);
+					IsAdditive = false;
+//					return false;
+				}
+			}
 
-            /// check if is table
-            return IsAdditive;
+			// other wise make sub totals
+			else
+			{
+				long tel = 0;
+				long maxdiepte = MaxDiepteVanSpanVariablen(&(m_tab[Index]));
+
+				while (!IsTable(&(m_tab[Index])))	{
+					AdjustTable(&(m_tab[Index]));
+					// To preven an unending loop
+					tel++;
+					if (tel > maxdiepte + 6 )	{
+
+						break;
+					}
+				}
+
+
+				if (tel > maxdiepte + 6)	{
+					*ErrorCode = CANNOTMAKETOTALS;
+					IsAdditive = false;
+//					return false;
+				}
+			}
+		}
+		// Calculated totals to be set as safe
+		if (SetCalculatedTotalsAsSafe)	{
+			for (i=0; i <m_tab[Index].nCell; i++)  {
+			// if not safe or unsafe set empty
+				dc = m_tab[Index].GetCell(i);
+				if (dc->GetStatus() == 0)  {
+					dc->SetStatus(CS_SAFE_MANUAL);
+					dc->IsFilled = false;  //Why false,AncoJuly 2012
+				}
+			}
+		}
+		// if status is not given. Either frequency or max score is given.
+		// to apply rules
+		else {
+			if (!((m_HasFreq) || (m_HasMaxScore)))	{
+				*ErrorCode = CANNOTCALCULATESAFETY;
+				return false;
+			}
+			else
+			{
+				for (i=0; i <m_tab[Index].nCell; i++)  {
+			// if not safe or unsafe set empty
+					dc = m_tab[Index].GetCell(i);
+					if (dc->GetStatus() == 0)  {
+						//	m_tab[Index].CellPtr.SetAt(i,dcempty);
+						//	dc = m_tab[Index].GetCell(i);
+						dc->SetStatus(m_tab[Index].ComputeCellSafeCode(*dc));
+						m_tab[Index].SetProtectionLevelCell(*dc);
+						dc->IsFilled = false;  //Why false,AncoJuly 2012
+					}
+				}
+			}
+		}
+
+		/// check if is table
+		return IsAdditive;
+
 	} // End loop status is given
 
 	if ((m_HasFreq) || (m_HasMaxScore))  {
-            //ComputeCellStatuses(m_tab[Index]);
-            //Once more check all statuses are filled
-            for (i=0; i <m_tab[Index].nCell; i++)  {
-            // if not safe or unsafe set empty
-                dc = m_tab[Index].GetCell(i);
-		if (dc->GetStatus() == 0)  {
-                    dc->SetStatus(CS_EMPTY);
+		//ComputeCellStatuses(m_tab[Index]);
+
+		//Once more check all statuses are filled
+		for (i=0; i <m_tab[Index].nCell; i++)  {
+			// if not safe or unsafe set empty
+			dc = m_tab[Index].GetCell(i);
+			if (dc->GetStatus() == 0)  {
+				dc->SetStatus(CS_EMPTY);
+			}
 		}
-            }
-            if (!CalculateTotals){
-            	if (!IsTable(&(m_tab[Index]))) {
-		// maybe error code shouls show that table is not ok.
-                    *ErrorCode = TABLENOTADDITIVE;
-   		    WriteJJFormat(Index, FileName, -1000, 1000, false, false, false);
-                    IsAdditive = false;
-//                  return false;
+		if (!CalculateTotals)	{
+			if (!IsTable(&(m_tab[Index]))) {
+				// maybe error code shouls show that table is not ok.
+				*ErrorCode = TABLENOTADDITIVE;
+   			    WriteJJFormat(Index, FileName, -1000, 1000, false, false, false);
+                IsAdditive = false;
+//				return false;
+			}
 		}
-            }
-            else{
-		long tel = 0;
-		long maxdiepte = MaxDiepteVanSpanVariablen(&(m_tab[Index]));
-		while (!IsTable(&(m_tab[Index]))){
-                    AdjustTable(&(m_tab[Index]));
-                    // To prevent an unending loop
-                    tel++;
-                    if (tel > maxdiepte+6 ){break;}
+		else
+		{
+			long tel = 0;
+			long maxdiepte = MaxDiepteVanSpanVariablen(&(m_tab[Index]));
+			while (!IsTable(&(m_tab[Index])))	{
+				AdjustTable(&(m_tab[Index]));
+				// To prevent an unending loop
+				tel++;
+				if (tel > maxdiepte+6 )	{
+					break;
+				}
+			}
+
+
+			if (tel > maxdiepte +6)	{
+				*ErrorCode = CANNOTMAKETOTALS;
+				IsAdditive = false;
+//				return false;
+			}
 		}
-		if (tel > maxdiepte +6)	{
-                    *ErrorCode = CANNOTMAKETOTALS;
-                    IsAdditive = false;
-//                  return false;
-		}
-            }
-            //for each cell create safe code
-            ComputeCellStatuses(m_tab[Index]);
-            SetProtectionLevels(m_tab[Index]);
+		//for each cell create safe code
+		ComputeCellStatuses(m_tab[Index]);
+		SetProtectionLevels(m_tab[Index]);
 	} //end loop HasFreq or HasMaxScore
 
 	// finale check: alles met status = 0  wordt empty als leeg or safe als niet leeg
-        // Bijvoorbeeld als er niets bekend is over de status
+    // Bijvoorbeeld als er niets bekend is over de status
 	for (i=0; i <m_tab[Index].nCell; i++)  {
-	// if not safe or unsafe set empty
-            dc = m_tab[Index].GetCell(i);
-            if (dc->GetStatus() == 0)  {
-            //	m_tab[Index].CellPtr.SetAt(i,dcempty);
-            //	dc = m_tab[Index].GetCell(i);
-                if (dc->GetFreq() == 0) {
-                    dc->SetStatus(CS_EMPTY);
-                    dc->IsFilled = false;
+		// if not safe or unsafe set empty
+		dc = m_tab[Index].GetCell(i);
+		if (dc->GetStatus() == 0)  {
+		//	m_tab[Index].CellPtr.SetAt(i,dcempty);
+		//	dc = m_tab[Index].GetCell(i);
+			if (dc->GetFreq() == 0) {
+				dc->SetStatus(CS_EMPTY);
+				dc->IsFilled = false;
+			}
+			else
+			{
+				dc->SetStatus(CS_SAFE_MANUAL);
+			}
 		}
-		else {
-                    dc->SetStatus(CS_SAFE_MANUAL);
-		}
-            }
 	}
 
 	return IsAdditive;
@@ -2643,17 +2667,18 @@ bool TauArgus::SetRealizedLowerAndUpper(long TabNr, long CelNr, double RealizedU
 		return false;
 	}
 
-	CDataCell *dc = m_tab[TabIndex].GetCell(CelNr);
+	CDataCell* dc = m_tab[TabIndex].GetCell(CelNr);
 	if ((dc->GetStatus() == CS_UNSAFE_FREQ) || (dc->GetStatus() == CS_UNSAFE_PEEP) ||
 		(dc->GetStatus() == CS_UNSAFE_RULE) || (dc->GetStatus() == CS_UNSAFE_SINGLETON) ||
 		(dc->GetStatus() == CS_UNSAFE_ZERO) ||
 		(dc->GetStatus() == CS_SECONDARY_UNSAFE) ||
-		(dc->GetStatus() == CS_UNSAFE_MANUAL)  || (dc->GetStatus() == CS_SECONDARY_UNSAFE_MANUAL)) {
+		(dc->GetStatus() == CS_UNSAFE_MANUAL) || (dc->GetStatus() == CS_SECONDARY_UNSAFE_MANUAL) ||
+		(dc->GetStatus() == CS_FROZEN)) { 
 		dc->SetRealizedLowerValue(RealizedLower);
 		dc->SetRealizedUpperValue(RealizedUpper);
 		return true;
 	}
-	else  {
+	else {
 		return false;
 	}
 }
@@ -3000,10 +3025,12 @@ bool TauArgus::SetSecondaryFromHierarchicalAMPL(const char* FileName, long Table
 		}
 
 		long Cellnum = tab->GetCellNrFromIndices(TableCellIndex);
+		CDataCell* dc = tab->GetCell(Cellnum);
 
-		CDataCell *dc = tab->GetCell(Cellnum);
-		if ((dc->GetStatus() != CS_EMPTY) && (dc->GetStatus() != CS_EMPTY_NONSTRUCTURAL))	{
-			dc->SetStatus(CS_SECONDARY_UNSAFE);
+		if ((dc->GetStatus() != CS_EMPTY) && (dc->GetStatus() != CS_EMPTY_NONSTRUCTURAL)) {
+			if (dc->GetStatus() != CS_FROZEN) {
+				dc->SetStatus(CS_SECONDARY_UNSAFE);
+			}
 		}
 		else {
 			return false;
@@ -4590,6 +4617,7 @@ void TauArgus::WriteCSVCell(FILE *fd, CTable *tab, long *Dim, bool ShowUnsafe, i
 		case CS_UNSAFE_MANUAL:
 		case CS_SECONDARY_UNSAFE:
 		case CS_SECONDARY_UNSAFE_MANUAL:
+		case CS_FROZEN:
 			switch (RespType ){
 			case 0: if (ShowUnsafe) {
 				       fprintf(fd, "%.*f", nDec, dc->GetResp());}
@@ -4686,6 +4714,9 @@ void TauArgus::WriteSBSStaart(FILE *fd, CTable *tab, long *Dim, char ValueSep, l
 		case CS_SECONDARY_UNSAFE:
 		case CS_SECONDARY_UNSAFE_MANUAL:
 			fprintf(fd, "D");
+			break;
+		case CS_FROZEN:
+			fprintf(fd, "f"); 
 			break;
 		case CS_EMPTY:
 			fprintf(fd, "-");
@@ -4961,6 +4992,9 @@ void TauArgus::ShowTableLayer(FILE *fd, int var1, int var2, int cellnr, CTable& 
 			case CS_SECONDARY_UNSAFE:
         fprintf(fd, "+| ");
 				break;
+			case CS_FROZEN:
+		fprintf(fd, "F| ");
+				break;
 			default:
         fprintf(fd, "?| ");
 				break;
@@ -4976,18 +5010,18 @@ void TauArgus::ShowTableLayer(FILE *fd, int var1, int var2, int cellnr, CTable& 
 // checks if the table is additive
 bool TauArgus::IsTable (CTable *tab)
 {
-    long DimNr[MAXDIM];
-    bool IsGoodTable = true;
+        long DimNr[MAXDIM];
+	bool IsGoodTable = true;
 
-    for (long d = 0; d < tab->nDim; d++) {
-	//WriteRange(fd, tab, var, d, DimNr, 0, WithBogus, tdp);
-	//long DimNr[MAXDIM];
-	TestTable(tab, d, DimNr, 0, &(IsGoodTable));
-	if (!IsGoodTable) {
-            return false;
+	for (long d = 0; d < tab->nDim; d++) {
+		//WriteRange(fd, tab, var, d, DimNr, 0, WithBogus, tdp);
+		//long DimNr[MAXDIM];
+		TestTable(tab, d, DimNr, 0, &(IsGoodTable));
+		if (!IsGoodTable) {
+				return false;
+		}
 	}
-    }
-    return true;
+	return true;
 }
 
 // to find subtotals from basal cells
@@ -5006,69 +5040,75 @@ void TauArgus::AdjustTable(CTable *tab)
 // Is good table is false if the table is not additive
 void TauArgus::TestTable(CTable *tab, long TargetDim, long *DimNr, long niv, bool *IsGoodTable)
 {
-    vector<unsigned int> Children;
-    CDataCell *dc;
-    double sum,test;
+	vector<unsigned int> Children;
+	CDataCell *dc;
+	double sum,test;
 
-    if (niv == tab->nDim) {
-	CVariable *v = &(m_var[tab->ExplVarnr[TargetDim]]);
-	int nCode = v->GetnCode();
-	// get hierarchical totals and compare them with
-	// sum of basal cells
-	if (v->IsHierarchical) {
-            int i, j, k;
-            for (i = 0, k = 0; i < nCode; i++) {
-		sum =0; test = 0;
-		int n = GetChildren(*v,i,Children);
-		if (n > 0) {
-                    DimNr[TargetDim] = k;
-                    sum = 0;
-                    dc = tab->GetCell(DimNr);
-                    test = dc->GetResp();
-                    for (j = 0; j < n; j++) {
-			long RealCode = Children[j];
-  			DimNr[TargetDim] = RealCode;
-			dc = tab-> GetCell(DimNr);
-			sum = sum + dc->GetResp();
-                    }
-                    if (!DBL_EQ(sum,test))	{
-                        *IsGoodTable = false;
-                    }
+	if (niv == tab->nDim) {
+		CVariable *v = &(m_var[tab->ExplVarnr[TargetDim]]);
+		int nCode = v->GetnCode();
+		// get hierarchical totals and compare them with
+		// sum of basal cells
+		if (v->IsHierarchical) {
+			int i, j, k;
+
+			for (i = 0, k = 0; i < nCode; i++) {
+				sum =0; test = 0;
+				int n = GetChildren(*v,i,Children);
+
+				if (n > 0) {
+					DimNr[TargetDim] = k;
+					sum = 0;
+					dc = tab->GetCell(DimNr);
+					test = dc->GetResp();
+					for (j = 0; j < n; j++) {
+						long RealCode = Children[j];
+  						DimNr[TargetDim] = RealCode;
+						dc = tab-> GetCell(DimNr);
+						sum = sum + dc->GetResp();
+					}
+
+					if (!DBL_EQ(sum,test))	{
+					    *IsGoodTable = false;
+					}
+				}
+				k++;
+			}
+
 		}
-		k++;
-            }
-	}
-	else {  // not hierarchical
-            DimNr[TargetDim] = 0;
-            sum = 0;
-            dc= tab->GetCell(DimNr);
-            test = dc->GetResp();
-            for (int i = 1; i < nCode; i++) {
-		DimNr[TargetDim] = i;
-		dc = tab->GetCell(DimNr);
-		sum = sum + dc->GetResp();
-            }
-            if (!DBL_EQ(sum,test))	{
-		*IsGoodTable = false;
-            }
-	}
-    }
-    else {
-	if (niv != TargetDim) {
-            int i, j;
-            CVariable *v = &(m_var[tab->ExplVarnr[niv]]);
-            int nCode = v->GetnCode();
-            for (i = 0, j = 0; i < nCode; i++) {
-		if (!v->IsHierarchical || !v->GethCode()[i].IsBogus) {
-                    DimNr[niv] = j++;
-                    TestTable(tab, TargetDim, DimNr, niv + 1, IsGoodTable);
+		else {  // not hierarchical
+			DimNr[TargetDim] = 0;
+			sum = 0;
+			dc= tab->GetCell(DimNr);
+			test = dc->GetResp();
+			for (int i = 1; i < nCode; i++) {
+				DimNr[TargetDim] = i;
+				dc = tab->GetCell(DimNr);
+				sum = sum + dc->GetResp();
+			}
+			if (!DBL_EQ(sum,test))	{
+				*IsGoodTable = false;
+			}
 		}
-            }
+
 	}
 	else {
-            TestTable(tab, TargetDim, DimNr, niv + 1, IsGoodTable);
+		if (niv != TargetDim) {
+			int i, j;
+			CVariable *v = &(m_var[tab->ExplVarnr[niv]]);
+			int nCode = v->GetnCode();
+  			for (i = 0, j = 0; i < nCode; i++) {
+				if (!v->IsHierarchical || !v->GethCode()[i].IsBogus) {
+					DimNr[niv] = j++;
+					TestTable(tab, TargetDim, DimNr, niv + 1, IsGoodTable);
+				}
+			}
+		}
+		else {
+			TestTable(tab, TargetDim, DimNr, niv + 1, IsGoodTable);
+
+		}
 	}
-    }
 }
 
 // Get Children for a code
@@ -5095,208 +5135,127 @@ int TauArgus::GetChildren(CVariable &var, int CodeIndex, vector<unsigned int> &C
 	// return number of children
 	return n;
 }
-// similar to Is Table except here the totals are created instead of verified
-// Adjusted PWOF 16-01-2026
-void TauArgus::AdjustNonBasalCells(CTable *tab, long TargetDim, long *DimNr, long niv)
-{
-    vector<unsigned int> Children;
-    CDataCell *dc;
-    CDataCell *dctemp;
-    CDataCell *addcell;
-    long tempDimNr;
-    long problemcell = 620;
-    
-    if (niv == tab->nDim) {
-        CVariable *v = &(m_var[tab->ExplVarnr[TargetDim]]);
-        int nCode = v->GetnCode();
-        // calculate hierarchical totals from basal cells
-        // replace by calculated total if differs from original
-        if (v->IsHierarchical) {
-            int i, j, k;
-            for (i = 0, k = 0; i < nCode; i++) {
-                int n = GetChildren(*v,i,Children);
-                if (n > 0) {
-                    DimNr[TargetDim] = k;
-                    tempDimNr = tab->GetCellNrFromIndices(DimNr);
-                    dctemp = tab->GetCell(DimNr);
-                    if (tempDimNr == problemcell)
-                        printf("dctemp  Freq=%ld Resp=%lf Shadow=%lf Cost=%lf\n",dctemp->GetFreq(),dctemp->GetResp(),dctemp->GetShadow(),dctemp->GetCost(1));
-                    addcell = new CDataCell(tab->NumberofMaxScoreCell, tab->NumberofMaxScoreHolding, tab->ApplyHolding, tab->ApplyWeight);
-                    addcell->SetStatus(0);
-                    for (j = 0; j < n; j++) {
-                        long RealCode = Children[j];
-                        DimNr[TargetDim] = RealCode;
-                        dc = tab->GetCell(DimNr);
-                        if (tempDimNr==problemcell){
-                            printf("dc (%ld)  Freq=%ld Resp=%lf Shadow=%lf Cost=%lf\n",tab->GetCellNrFromIndices(DimNr),dc->GetFreq(),dc->GetResp(),dc->GetShadow(),dc->GetCost(1));
-                        }
-                        *addcell += *dc;
-                    }
-                    if (tempDimNr == problemcell)                    
-                        printf("addcell Freq=%ld Resp=%lf Shadow=%lf Cost=%lf\n",addcell->GetFreq(),addcell->GetResp(),addcell->GetShadow(),addcell->GetCost(1));
-                    // Compare checks on Freq, Resp, Shadow and Cost
-                    if (!dctemp->Compare(*addcell)){
-                        if (!dctemp->Compare(*(tab->GetCell(tab->nCell)))){
-                            delete dctemp;
-                        }
-                        tab->CellPtr[tempDimNr] = addcell;
-                    }
-                    else {
-                        delete addcell;
-                    }
-                }
-                k++;
-            }
-        }
-        else {  // not hierarchical
-            DimNr[TargetDim] = 0;
-            tempDimNr = tab->GetCellNrFromIndices(DimNr);
-            dctemp = tab->GetCell(DimNr);
-            addcell = new CDataCell(tab->NumberofMaxScoreCell, tab->NumberofMaxScoreCell, tab->ApplyHolding, tab->ApplyWeight);
-            addcell->SetStatus(0);
-            for (int i = 1; i < nCode; i++){
-                DimNr[TargetDim] = i;
-                dc = tab->GetCell(DimNr);
-                *addcell += *dc;
-            }
-            if (!dctemp->Compare(*addcell)){
-                if (!dctemp->Compare(*(tab->GetCell(tab->nCell)))){
-                    delete dctemp;
-                }
-                tab->CellPtr[tempDimNr] = addcell;
-            }
-            else {
-                delete addcell;
-            }
-        }
-    }
-    else {
-        if (niv != TargetDim) {
-            int i, j;
-            CVariable *v = &(m_var[tab->ExplVarnr[niv]]);
-            int nCode = v->GetnCode();
-            for (i = 0, j = 0; i < nCode; i++) {
-                if (!v->IsHierarchical || !v->GethCode()[i].IsBogus) {
-                    DimNr[niv] = j++;
-                    AdjustNonBasalCells(tab, TargetDim, DimNr, niv + 1);
-                }
-            }
-        }
-        else {
-            AdjustNonBasalCells(tab, TargetDim, DimNr, niv + 1);
-        }
-    }
-}
 
 // similar to Is Table except here the totals are created instead of verified
-/* Original code 16-01-2026
 void TauArgus::AdjustNonBasalCells(CTable *tab, long TargetDim, long *DimNr, long niv)
 {
-    vector<unsigned int> Children;
-    CDataCell *dc;
-    CDataCell *dctemp;//, *dcramya;
-    CDataCell *addcell;
-    long tempDimNr;
-    double sum;//,test;
+	vector<unsigned int> Children;
+	CDataCell *dc;
+	CDataCell *dctemp;//, *dcramya;
+        CDataCell *addcell;
+	long tempDimNr;
+	double sum;//,test;
 
-    if (niv == tab->nDim) {
-        CVariable *v = &(m_var[tab->ExplVarnr[TargetDim]]);
-        int nCode = v->GetnCode();
-        if (v->IsHierarchical) {
-            int i, j, k;
-            for (i = 0, k = 0; i < nCode; i++) {
-//              sum =0; test = 0;
-                int n = GetChildren(*v,i,Children);
-                if (n > 0) {
-                    // count number of bogus codes before code i
-                    DimNr[TargetDim] = k;
-                    sum = 0;
-                    tempDimNr = tab->GetCellNrFromIndices(DimNr);
-                    dctemp = tab->GetCell(DimNr);
-                    //test = dc->GetResp();
-                    //fprintf(fd, "0.0 %d : %d (-1) ", n + 1, GetCellNrFromIndices(tab->nDim, DimNr, tdp) );
-                    sum = 0;
-                    addcell = new CDataCell(tab->NumberofMaxScoreCell, tab->NumberofMaxScoreHolding, tab->ApplyHolding, tab->ApplyWeight );
-                    addcell->SetStatus(0);
-                    for (j = 0; j < n; j++) {
-                        long RealCode = Children[j];
-                        DimNr[TargetDim] = RealCode;
-                        //fprintf(fd, "%d (1) ", GetCellNrFromIndices(tab->nDim, DimNr, tdp));
-                        dc = tab-> GetCell(DimNr);
-                        sum = sum + dc->GetResp();
-                        *addcell += *dc;
-                    }
-                    if (!dctemp->Compare(*addcell))	{
-                        //dctemp = addcell; //maybe I need a way to set equality
-                        //delete[] dctemp;
-                        if (!dctemp->Compare(*(tab->GetCell(tab->nCell))))	{
-                            delete dctemp;
-                        }
-                        tab->CellPtr[tempDimNr] = addcell;
-                    }
-                    else {
-                        delete addcell;
-                    }
-                }
-                k++;
-            }
-		//now do the check
-        }
-        else {  // not hierarchical
-            DimNr[TargetDim] = 0;
-            sum = 0;
-            tempDimNr = tab->GetCellNrFromIndices(DimNr);
-            dctemp = tab->GetCell(DimNr);
-            //test = dctemp->GetResp(); // Is not used ??? PWOF 20170127
-            //fprintf(fd, "0.0 %d : %d (-1) ", nCode, GetCellNrFromIndices(tab->nDim, DimNr, tdp) );
-            addcell = new CDataCell(tab->NumberofMaxScoreCell, tab->NumberofMaxScoreCell,
+
+	if (niv == tab->nDim) {
+		CVariable *v = &(m_var[tab->ExplVarnr[TargetDim]]);
+		int nCode = v->GetnCode();
+		if (v->IsHierarchical) {
+			int i, j, k;
+
+			for (i = 0, k = 0; i < nCode; i++) {
+//				sum =0; test = 0;
+				int n = GetChildren(*v,i,Children);
+
+				if (n > 0) {
+          // count number of bogus codes before code i
+
+					DimNr[TargetDim] = k;
+					sum = 0;
+
+					tempDimNr = tab->GetCellNrFromIndices(DimNr);
+					dctemp = tab->GetCell(DimNr);
+					//test = dc->GetResp();
+					//fprintf(fd, "0.0 %d : %d (-1) ", n + 1, GetCellNrFromIndices(tab->nDim, DimNr, tdp) );
+					sum = 0;
+					addcell = new CDataCell(tab->NumberofMaxScoreCell,
+						tab->NumberofMaxScoreHolding, tab->ApplyHolding, tab->ApplyWeight );
+					addcell->SetStatus(0);
+					for (j = 0; j < n; j++) {
+						long RealCode = Children[j];
+  						DimNr[TargetDim] = RealCode;
+    					//fprintf(fd, "%d (1) ", GetCellNrFromIndices(tab->nDim, DimNr, tdp));
+						dc = tab-> GetCell(DimNr);
+						sum = sum + dc->GetResp();
+						*addcell += *dc;
+					}
+					if (!dctemp->Compare(*addcell))	{
+
+					//dctemp = addcell; //maybe I need a way to set equality
+					//delete[] dctemp;
+						if (!dctemp->Compare(*(tab->GetCell(tab->nCell))))	{
+							delete dctemp;
+						}
+						tab->CellPtr[tempDimNr] = addcell;
+					}
+					else {
+						delete addcell;
+					}
+				}
+				k++;
+			}
+			//now do the check
+
+		}
+		else {  // not hierarchical
+			DimNr[TargetDim] = 0;
+			sum = 0;
+			tempDimNr = tab->GetCellNrFromIndices(DimNr);
+			dctemp = tab->GetCell(DimNr);
+			//test = dctemp->GetResp(); // Is not used ??? PWOF 20170127
+			//fprintf(fd, "0.0 %d : %d (-1) ", nCode, GetCellNrFromIndices(tab->nDim, DimNr, tdp) );
+			addcell = new CDataCell(tab->NumberofMaxScoreCell, tab->NumberofMaxScoreCell,
 				tab->ApplyHolding, tab->ApplyWeight);
-            addcell->SetStatus(0);
-            for (int i = 1; i < nCode; i++) {
-                DimNr[TargetDim] = i;
-                //fprintf(fd, "%d (1) ", GetCellNrFromIndices(tab->nDim, DimNr, tdp) );
-                dc = tab->GetCell(DimNr);
-                sum = sum + dc->GetResp();
-                *addcell += *dc;
-            }
-            //if (test != sum) {
-            //	*IsGoodTable = false;
-            //}
-            if (!dctemp->Compare(*addcell))	{
-                //if (dctemp != addcell)	{
-                //dctemp = addcell; //maybe I need a way to set equality
-                //delete [] dctemp;
-                if (!dctemp->Compare(*(tab->GetCell(tab->nCell))))	{
-                    delete dctemp;
-                }
-                tab->CellPtr[tempDimNr] = addcell;
-            }
-            else {
-                delete addcell;
-            }
-            // Does not do anything ??? PWOF 20170127
-            //dcramya = tab->GetCell(tempDimNr);
-        }
-    }
-    else {
-        if (niv != TargetDim) {
-            int i, j;
-            CVariable *v = &(m_var[tab->ExplVarnr[niv]]);
-            int nCode = v->GetnCode();
-            for (i = 0, j = 0; i < nCode; i++) {
-                if (!v->IsHierarchical || !v->GethCode()[i].IsBogus) {
-		//) {
-                    DimNr[niv] = j++;
-                    //WriteRange(fd, tab, var, TargetDim, DimNr, niv + 1, WithBogus, tdp);
-                    AdjustNonBasalCells(tab, TargetDim, DimNr, niv + 1);
-                }
-            }
-        }
-        else {
-            AdjustNonBasalCells(tab, TargetDim, DimNr, niv + 1);
-        }
-    }
-}*/
+			addcell->SetStatus(0);
+			for (int i = 1; i < nCode; i++) {
+				DimNr[TargetDim] = i;
+				//fprintf(fd, "%d (1) ", GetCellNrFromIndices(tab->nDim, DimNr, tdp) );
+				dc = tab->GetCell(DimNr);
+				sum = sum + dc->GetResp();
+				*addcell += *dc;
+			}
+
+			//if (test != sum) {
+			//	*IsGoodTable = false;
+			//}
+			if (!dctemp->Compare(*addcell))	{
+			//if (dctemp != addcell)	{
+				//dctemp = addcell; //maybe I need a way to set equality
+				//delete [] dctemp;
+				if (!dctemp->Compare(*(tab->GetCell(tab->nCell))))	{
+					delete dctemp;
+				}
+				tab->CellPtr[tempDimNr] = addcell;
+			}
+			else {
+
+				delete addcell;
+			}
+                        // Does not do anything ??? PWOF 20170127
+			//dcramya = tab->GetCell(tempDimNr);
+		}
+
+	}
+	else {
+		if (niv != TargetDim) {
+			int i, j;
+			CVariable *v = &(m_var[tab->ExplVarnr[niv]]);
+			int nCode = v->GetnCode();
+  			for (i = 0, j = 0; i < nCode; i++) {
+				if (!v->IsHierarchical || !v->GethCode()[i].IsBogus) {
+					//) {
+					DimNr[niv] = j++;
+					//WriteRange(fd, tab, var, TargetDim, DimNr, niv + 1, WithBogus, tdp);
+					AdjustNonBasalCells(tab, TargetDim, DimNr, niv + 1);
+				}
+			}
+		}
+		else {
+			AdjustNonBasalCells(tab, TargetDim, DimNr, niv + 1);
+
+		}
+	}
+}
 
 // read variables from a free formated file
 bool TauArgus::ReadVariablesFreeFormat(char *Str, vector<char *> &VarCodes)
